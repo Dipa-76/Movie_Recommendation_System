@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendation System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+</head>
+<body>
+
+    <div class="container">
+        <h2>Movie Recommendation System</h2>
+        <input type="text" id="movieInput" placeholder="Enter a movie name">
+        <button onclick="getRecommendations()">Get Recommendations</button>
+        <div id="loading" style="display:none;">Loading...</div>
+        <p>Recommended Movies:</p>
+        <ul id="result"></ul>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $("#movieInput").autocomplete({
+                source: function(request, response) {
+                    $.getJSON("/suggest", { term: request.term }, function(data) {
+                        response(data);
+                    });
+                }
+            });
+        });
+
+        async function getRecommendations() {
+            let movieName = document.getElementById("movieInput").value;
+            let loadingElement = document.getElementById("loading");
+            loadingElement.style.display = "block";
+
+            let response = await fetch("/recommend", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ movie_name: movieName })
+            });
+
+            let data = await response.json();
+            let resultElement = document.getElementById("result");
+            resultElement.innerHTML = "";
+
+            data.recommendations.forEach(movie => {
+                let li = document.createElement("li");
+                li.textContent = movie;
+                resultElement.appendChild(li);
+            });
+
+            loadingElement.style.display = "none";
+        }
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
